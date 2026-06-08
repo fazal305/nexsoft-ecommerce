@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://nexsoft-ecommerce.onrender.com/api';
 
 async function apiCall(endpoint, method = 'GET', body = null) {
   const headers = {
