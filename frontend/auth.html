@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Login / Register | NexMart</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark app-navbar fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">NEXMART</a>
+    </div>
+  </nav>
+
+  <main class="page-top">
+    <section class="section-padding">
+      <div class="container">
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <button id="loginTab" class="auth-tab active">Login</button>
+            <button id="registerTab" class="auth-tab">Register</button>
+          </div>
+
+          <form id="loginForm" class="auth-form">
+            <h1>Welcome Back</h1>
+            <p>Login to continue shopping.</p>
+
+            <input id="loginEmail" class="form-control app-input mb-3" type="email" placeholder="Email address" required>
+            <input id="loginPassword" class="form-control app-input mb-3" type="password" placeholder="Password" required>
+
+            <button id="loginButton" class="btn primary-btn w-100" type="submit">Login</button>
+          </form>
+
+          <form id="registerForm" class="auth-form d-none">
+            <h1>Create Account</h1>
+            <p>Register as a customer.</p>
+
+            <input id="registerName" class="form-control app-input mb-3" type="text" placeholder="Full name" required>
+            <input id="registerEmail" class="form-control app-input mb-3" type="email" placeholder="Email address" required>
+            <input id="registerPassword" class="form-control app-input mb-3" type="password" placeholder="Password" required>
+            <input id="confirmPassword" class="form-control app-input mb-3" type="password" placeholder="Confirm password" required>
+
+            <button id="registerButton" class="btn primary-btn w-100" type="submit">Create Account</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastContainer" class="toast-container-custom"></div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      if (isLoggedIn()) {
+        window.location.href = isAdmin() ? 'admin.html' : 'index.html';
+        return;
+      }
+
+      $('#loginTab').on('click', showLoginForm);
+      $('#registerTab').on('click', showRegisterForm);
+
+      $('#loginForm').on('submit', function (event) {
+        event.preventDefault();
+        loginUser();
+      });
+
+      $('#registerForm').on('submit', function (event) {
+        event.preventDefault();
+        registerUser();
+      });
+    });
+
+    function showLoginForm() {
+      $('#loginTab').addClass('active');
+      $('#registerTab').removeClass('active');
+      $('#loginForm').removeClass('d-none');
+      $('#registerForm').addClass('d-none');
+    }
+
+    function showRegisterForm() {
+      $('#registerTab').addClass('active');
+      $('#loginTab').removeClass('active');
+      $('#registerForm').removeClass('d-none');
+      $('#loginForm').addClass('d-none');
+    }
+
+    async function loginUser() {
+      const loginData = {
+        email: $('#loginEmail').val().trim(),
+        password: $('#loginPassword').val()
+      };
+
+      $('#loginButton').prop('disabled', true).text('Logging in...');
+
+      const response = await apiCall('/auth/login', 'POST', loginData);
+
+      if (!response.success) {
+        $('#loginButton').prop('disabled', false).text('Login');
+        showToast(response.message || 'Login failed.', 'error');
+        return;
+      }
+
+      localStorage.setItem('nexmartToken', response.token);
+      localStorage.setItem('nexmartUser', JSON.stringify(response.user));
+
+      await mergeGuestCartToBackend();
+
+      showToast('Login successful.', 'success');
+
+      setTimeout(function () {
+        window.location.href = response.user.role === 'admin' ? 'admin.html' : 'index.html';
+      }, 700);
+    }
+
+    async function registerUser() {
+      const password = $('#registerPassword').val();
+      const confirmPassword = $('#confirmPassword').val();
+
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match.', 'error');
+        return;
+      }
+
+      const registerData = {
+        name: $('#registerName').val().trim(),
+        email: $('#registerEmail').val().trim(),
+        password
+      };
+
+      $('#registerButton').prop('disabled', true).text('Creating account...');
+
+      const response = await apiCall('/auth/register', 'POST', registerData);
+
+      if (!response.success) {
+        $('#registerButton').prop('disabled', false).text('Create Account');
+        showToast(response.message || 'Registration failed.', 'error');
+        return;
+      }
+
+      localStorage.setItem('nexmartToken', response.token);
+      localStorage.setItem('nexmartUser', JSON.stringify(response.user));
+
+      await mergeGuestCartToBackend();
+
+      showToast('Account created successfully.', 'success');
+
+      setTimeout(function () {
+        window.location.href = 'index.html';
+      }, 700);
+    }
+  </script>
+</body>
+</html>

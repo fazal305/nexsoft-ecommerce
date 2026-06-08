@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Admin Panel | NexMart</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="admin-layout">
+    <aside class="admin-sidebar">
+      <a class="navbar-brand fw-bold d-block mb-4" href="index.html">NEXMART</a>
+
+      <button class="admin-nav-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="admin-nav-btn" data-tab="products">Products</button>
+      <button class="admin-nav-btn" data-tab="orders">Orders</button>
+      <button class="admin-nav-btn" data-tab="customers">Customers</button>
+
+      <button class="btn logout-btn w-100 mt-4" onclick="logout()">Logout</button>
+    </aside>
+
+    <section class="admin-main">
+      <div class="admin-topbar">
+        <div>
+          <p class="eyebrow">Admin Panel</p>
+          <h1>NexMart Control Center</h1>
+        </div>
+        <a href="index.html" class="btn ghost-btn">View Store</a>
+      </div>
+
+      <div id="dashboardTab" class="admin-tab">
+        <div id="statsGrid" class="admin-stats-grid"></div>
+
+        <div class="admin-panel mt-4">
+          <h2>Low Stock Alerts</h2>
+          <div id="lowStockArea"></div>
+        </div>
+      </div>
+
+      <div id="productsTab" class="admin-tab d-none">
+        <div class="admin-panel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Products</h2>
+            <button class="btn primary-btn" onclick="openAddProductModal()">Add Product</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Featured</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminProductsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="ordersTab" class="admin-tab d-none">
+        <div class="admin-panel">
+          <h2>Orders</h2>
+
+          <div class="table-responsive mt-3">
+            <table class="table admin-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Total</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminOrdersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="customersTab" class="admin-tab d-none">
+        <div class="admin-panel">
+          <h2>Customers</h2>
+
+          <div class="table-responsive mt-3">
+            <table class="table admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody id="adminCustomersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content admin-modal">
+        <div class="modal-header">
+          <h5 id="productModalTitle" class="modal-title">Add Product</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <form id="productForm">
+          <div class="modal-body">
+            <input id="editingProductId" type="hidden">
+
+            <input id="productName" class="form-control app-input mb-3" placeholder="Product name" required>
+            <textarea id="productDescription" class="form-control app-input mb-3" placeholder="Description" required></textarea>
+
+            <div class="row">
+              <div class="col-md-6">
+                <input id="productPrice" class="form-control app-input mb-3" type="number" placeholder="Price" required>
+              </div>
+              <div class="col-md-6">
+                <input id="productOriginalPrice" class="form-control app-input mb-3" type="number" placeholder="Original price">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <input id="productCategory" class="form-control app-input mb-3" placeholder="Category" required>
+              </div>
+              <div class="col-md-6">
+                <input id="productStock" class="form-control app-input mb-3" type="number" placeholder="Stock" required>
+              </div>
+            </div>
+
+            <label class="form-label">Product Color</label>
+            <input id="productColor" class="form-control form-control-color mb-3" type="color" value="#00f5ff">
+
+            <div class="form-check">
+              <input id="productFeatured" class="form-check-input" type="checkbox">
+              <label class="form-check-label" for="productFeatured">Featured product</label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn ghost-btn" data-bs-dismiss="modal">Cancel</button>
+            <button id="saveProductButton" type="submit" class="btn primary-btn">Save Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container-custom"></div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    let productModal = null;
+
+    $(document).ready(function () {
+      productModal = new bootstrap.Modal(document.getElementById('productModal'));
+
+      protectAdminPage();
+      loadAdminData();
+
+      $('.admin-nav-btn').on('click', function () {
+        const tab = $(this).data('tab');
+        switchAdminTab(tab);
+      });
+
+      $('#productForm').on('submit', function (event) {
+        event.preventDefault();
+        saveAdminProduct();
+      });
+    });
+
+    function protectAdminPage() {
+      if (!isLoggedIn() || !isAdmin()) {
+        showToast('Admin access only.', 'error');
+
+        setTimeout(function () {
+          window.location.href = 'auth.html';
+        }, 800);
+      }
+    }
+
+    function switchAdminTab(tab) {
+      $('.admin-nav-btn').removeClass('active');
+      $(`.admin-nav-btn[data-tab="${tab}"]`).addClass('active');
+
+      $('.admin-tab').addClass('d-none');
+      $(`#${tab}Tab`).removeClass('d-none');
+    }
+
+    async function loadAdminData() {
+      await loadStats();
+      await loadAdminProducts();
+      await loadAdminOrders();
+      await loadAdminCustomers();
+    }
+
+    async function loadStats() {
+      const response = await apiCall('/admin/stats');
+
+      if (!response.success) {
+        showToast(response.message || 'Failed to load stats.', 'error');
+        return;
+      }
+
+      const stats = response.stats;
+
+      $('#statsGrid').html(`
+        <div class="stat-card"><span>Total Products</span><strong>${stats.totalProducts}</strong></div>
+        <div class="stat-card"><span>Total Orders</span><strong>${stats.totalOrders}</strong></div>
+        <div class="stat-card"><span>Total Revenue</span><strong>${formatPrice(stats.totalRevenue)}</strong></div>
+        <div class="stat-card"><span>Total Customers</span><strong>${stats.totalUsers}</strong></div>
+      `);
+
+      const lowStockHtml = stats.lowStockProducts.length === 0
+        ? '<p class="text-muted mb-0">No low stock products.</p>'
+        : stats.lowStockProducts.map(function (product) {
+            return `<div class="admin-list-row"><span>${product.name}</span><strong>${product.stock} left</strong></div>`;
+          }).join('');
+
+      $('#lowStockArea').html(lowStockHtml);
+    }
+
+    async function loadAdminProducts() {
+      const response = await apiCall('/admin/products');
+
+      if (!response.success) {
+        showToast(response.message || 'Failed to load products.', 'error');
+        return;
+      }
+
+      const rows = response.products.map(function (product) {
+        const safeProduct = encodeURIComponent(JSON.stringify(product));
+
+        return `
+          <tr>
+            <td>${product.name}</td>
+            <td>${product.category}</td>
+            <td>${formatPrice(product.price)}</td>
+            <td>${product.stock}</td>
+            <td>${product.isFeatured ? 'Yes' : 'No'}</td>
+            <td>
+              <button class="table-edit-btn" onclick="openEditProductModal('${safeProduct}')">Edit</button>
+              <button class="table-delete-btn" onclick="deleteAdminProduct('${product._id}')">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      $('#adminProductsTable').html(rows || '<tr><td colspan="6">No products found.</td></tr>');
+    }
+
+    function openAddProductModal() {
+      $('#productModalTitle').text('Add Product');
+      $('#saveProductButton').text('Save Product');
+      $('#editingProductId').val('');
+      $('#productForm')[0].reset();
+      $('#productColor').val('#00f5ff');
+      productModal.show();
+    }
+
+    function openEditProductModal(encodedProduct) {
+      const product = JSON.parse(decodeURIComponent(encodedProduct));
+      const productColor = product.images && product.images.length > 0 ? product.images[0] : '#00f5ff';
+
+      $('#productModalTitle').text('Edit Product');
+      $('#saveProductButton').text('Update Product');
+
+      $('#editingProductId').val(product._id);
+      $('#productName').val(product.name);
+      $('#productDescription').val(product.description);
+      $('#productPrice').val(product.price);
+      $('#productOriginalPrice').val(product.originalPrice || 0);
+      $('#productCategory').val(product.category);
+      $('#productStock').val(product.stock);
+      $('#productColor').val(productColor);
+      $('#productFeatured').prop('checked', product.isFeatured);
+
+      productModal.show();
+    }
+
+    async function saveAdminProduct() {
+      const editingProductId = $('#editingProductId').val();
+
+      const productData = {
+        name: $('#productName').val().trim(),
+        description: $('#productDescription').val().trim(),
+        price: Number($('#productPrice').val()),
+        originalPrice: Number($('#productOriginalPrice').val()) || 0,
+        category: $('#productCategory').val().trim(),
+        stock: Number($('#productStock').val()),
+        images: [$('#productColor').val()],
+        isFeatured: $('#productFeatured').is(':checked')
+      };
+
+      $('#saveProductButton').prop('disabled', true).text(editingProductId ? 'Updating...' : 'Saving...');
+
+      const endpoint = editingProductId
+        ? `/admin/products/${editingProductId}`
+        : '/admin/products';
+
+      const method = editingProductId ? 'PUT' : 'POST';
+
+      const response = await apiCall(endpoint, method, productData);
+
+      $('#saveProductButton').prop('disabled', false).text(editingProductId ? 'Update Product' : 'Save Product');
+
+      if (!response.success) {
+        showToast(response.message || 'Failed to save product.', 'error');
+        return;
+      }
+
+      showToast(editingProductId ? 'Product updated successfully.' : 'Product created successfully.', 'success');
+
+      $('#productForm')[0].reset();
+      $('#editingProductId').val('');
+      productModal.hide();
+
+      await loadAdminProducts();
+      await loadStats();
+    }
+
+    async function deleteAdminProduct(productId) {
+      const confirmed = confirm('Delete this product?');
+
+      if (!confirmed) {
+        return;
+      }
+
+      const response = await apiCall(`/admin/products/${productId}`, 'DELETE');
+
+      if (!response.success) {
+        showToast(response.message || 'Failed to delete product.', 'error');
+        return;
+      }
+
+      showToast('Product deleted.', 'success');
+
+      await loadAdminProducts();
+      await loadStats();
+    }
+
+    async function loadAdminOrders() {
+      const response = await apiCall('/admin/orders');
+
+      if (!response.success) {
+        return;
+      }
+
+      const rows = response.orders.map(function (order) {
+        const customerName = order.userId ? order.userId.name : 'Unknown';
+
+        return `
+          <tr>
+            <td>${order.orderNumber}</td>
+            <td>${customerName}</td>
+            <td>${formatPrice(order.totalAmount)}</td>
+            <td>${order.paymentStatus}</td>
+            <td>
+              <select class="form-select app-input" onchange="updateOrderStatus('${order._id}', this.value)">
+                <option value="processing" ${order.orderStatus === 'processing' ? 'selected' : ''}>Processing</option>
+                <option value="shipped" ${order.orderStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
+                <option value="delivered" ${order.orderStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="cancelled" ${order.orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      $('#adminOrdersTable').html(rows || '<tr><td colspan="5">No orders yet.</td></tr>');
+    }
+
+    async function updateOrderStatus(orderId, orderStatus) {
+      const response = await apiCall(`/admin/orders/${orderId}/status`, 'PUT', {
+        orderStatus
+      });
+
+      if (!response.success) {
+        showToast(response.message || 'Failed to update order.', 'error');
+        return;
+      }
+
+      showToast('Order status updated.', 'success');
+    }
+
+    async function loadAdminCustomers() {
+      const response = await apiCall('/admin/users');
+
+      if (!response.success) {
+        return;
+      }
+
+      const rows = response.users.map(function (user) {
+        return `
+          <tr>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${formatDate(user.createdAt)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      $('#adminCustomersTable').html(rows || '<tr><td colspan="3">No customers found.</td></tr>');
+    }
+  </script>
+</body>
+</html>

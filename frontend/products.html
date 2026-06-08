@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Products | NexMart</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark app-navbar fixed-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">NEXMART</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="products.html">Products</a></li>
+          <li class="nav-item"><a class="nav-link" href="orders.html">Orders</a></li>
+          <li class="nav-item">
+            <a class="nav-link cart-link" href="cart.html">
+              Cart <span id="cartCountBadge" class="cart-badge">0</span>
+            </a>
+          </li>
+          <li class="nav-item" id="authNavArea"></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-top">
+    <section class="section-padding">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Catalog</p>
+          <h1>All Products</h1>
+        </div>
+
+        <div class="row g-4">
+          <aside class="col-lg-3">
+            <div class="filter-panel">
+              <label class="form-label">Search</label>
+              <input id="searchInput" class="form-control app-input" type="text" placeholder="Search products..." />
+
+              <label class="form-label mt-4">Category</label>
+              <select id="categorySelect" class="form-select app-input">
+                <option value="">All Categories</option>
+              </select>
+
+              <label class="form-label mt-4">Sort</label>
+              <select id="sortSelect" class="form-select app-input">
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </select>
+
+              <button id="clearFiltersButton" class="btn ghost-btn w-100 mt-4">Clear Filters</button>
+            </div>
+          </aside>
+
+          <div class="col-lg-9">
+            <div class="catalog-toolbar">
+              <p id="productCountText" class="mb-0">Loading products...</p>
+            </div>
+
+            <div id="productsGrid" class="row g-4 mt-1">
+              <div class="col-12">
+                <div class="loading-box">Loading products...</div>
+              </div>
+            </div>
+
+            <div id="paginationArea" class="pagination-area"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastContainer" class="toast-container-custom"></div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    let currentPage = 1;
+    let searchTimer = null;
+
+    $(document).ready(function () {
+      updateNavbar();
+      updateCartBadge();
+      loadCategories();
+      readCategoryFromUrl();
+      loadProducts();
+
+      $('#searchInput').on('input', function () {
+        clearTimeout(searchTimer);
+
+        searchTimer = setTimeout(function () {
+          currentPage = 1;
+          loadProducts();
+        }, 400);
+      });
+
+      $('#categorySelect, #sortSelect').on('change', function () {
+        currentPage = 1;
+        loadProducts();
+      });
+
+      $('#clearFiltersButton').on('click', function () {
+        $('#searchInput').val('');
+        $('#categorySelect').val('');
+        $('#sortSelect').val('newest');
+        currentPage = 1;
+        loadProducts();
+      });
+    });
+
+    function readCategoryFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get('category');
+
+      if (category) {
+        $('#categorySelect').val(category);
+      }
+    }
+
+    async function loadCategories() {
+      const response = await apiCall('/products/categories');
+
+      if (!response.success) {
+        return;
+      }
+
+      const options = response.categories.map(function (category) {
+        return `<option value="${category}">${category}</option>`;
+      }).join('');
+
+      $('#categorySelect').append(options);
+      readCategoryFromUrl();
+    }
+
+    async function loadProducts() {
+      const search = $('#searchInput').val();
+      const category = $('#categorySelect').val();
+      const sort = $('#sortSelect').val();
+
+      $('#productsGrid').html('<div class="col-12"><div class="loading-box">Loading products...</div></div>');
+
+      const query = new URLSearchParams({
+        search,
+        category,
+        sort,
+        page: currentPage,
+        limit: 8
+      });
+
+      const response = await apiCall(`/products?${query.toString()}`);
+
+      if (!response.success) {
+        $('#productsGrid').html('<div class="col-12"><div class="error-box">Failed to load products.</div></div>');
+        return;
+      }
+
+      $('#productCountText').text(`${response.totalProducts} products found`);
+
+      if (response.products.length === 0) {
+        $('#productsGrid').html('<div class="col-12"><div class="loading-box">No products found.</div></div>');
+        $('#paginationArea').html('');
+        return;
+      }
+
+      const productCards = response.products.map(function (product) {
+        return buildProductCard(product);
+      }).join('');
+
+      $('#productsGrid').html(productCards);
+      renderPagination(response.totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) {
+        $('#paginationArea').html('');
+        return;
+      }
+
+      let buttons = '';
+
+      for (let page = 1; page <= totalPages; page++) {
+        buttons += `
+          <button class="pagination-button ${page === currentPage ? 'active' : ''}" onclick="goToPage(${page})">
+            ${page}
+          </button>
+        `;
+      }
+
+      $('#paginationArea').html(buttons);
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadProducts();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
