@@ -11,10 +11,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const options = {
-    method,
-    headers
-  };
+  const options = { method, headers };
 
   if (body) {
     options.body = JSON.stringify(body);
@@ -23,7 +20,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
     return await response.json();
-  } catch (error) {
+  } catch {
     return {
       success: false,
       message: 'Unable to connect to server.'
@@ -31,13 +28,27 @@ async function apiCall(endpoint, method = 'GET', body = null) {
   }
 }
 
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 function getToken() {
   return localStorage.getItem('nexmartToken');
 }
 
 function getUser() {
-  const user = localStorage.getItem('nexmartUser');
-  return user ? JSON.parse(user) : null;
+  try {
+    const user = localStorage.getItem('nexmartUser');
+    return user ? JSON.parse(user) : null;
+  } catch {
+    localStorage.removeItem('nexmartUser');
+    return null;
+  }
 }
 
 function isLoggedIn() {
@@ -46,7 +57,7 @@ function isLoggedIn() {
 
 function isAdmin() {
   const user = getUser();
-  return user && user.role === 'admin';
+  return Boolean(user && user.role === 'admin');
 }
 
 function logout() {
@@ -60,8 +71,13 @@ function logout() {
 }
 
 function getGuestCart() {
-  const cart = localStorage.getItem('nexmartGuestCart');
-  return cart ? JSON.parse(cart) : [];
+  try {
+    const cart = localStorage.getItem('nexmartGuestCart');
+    return cart ? JSON.parse(cart) : [];
+  } catch {
+    localStorage.removeItem('nexmartGuestCart');
+    return [];
+  }
 }
 
 function saveGuestCart(cart) {
@@ -90,18 +106,18 @@ async function getCartCount() {
     const guestCart = getGuestCart();
 
     return guestCart.reduce(function (total, item) {
-      return total + item.quantity;
+      return total + Number(item.quantity || 0);
     }, 0);
   }
 
   const response = await apiCall('/cart');
 
-  if (!response.success) {
+  if (!response.success || !response.cart) {
     return 0;
   }
 
   return response.cart.items.reduce(function (total, item) {
-    return total + item.quantity;
+    return total + Number(item.quantity || 0);
   }, 0);
 }
 
@@ -121,23 +137,24 @@ function updateNavbar() {
   if (user.role === 'admin') {
     $('#authNavArea').html(`
       <a class="btn small-btn admin-link" href="admin.html">Admin</a>
-      <button class="btn logout-btn ms-lg-2" onclick="logout()">Logout</button>
+      <button class="btn logout-btn ms-lg-2" type="button" onclick="logout()">Logout</button>
     `);
     return;
   }
 
   $('#authNavArea').html(`
-    <span class="navbar-user">Hi, ${user.name}</span>
-    <button class="btn logout-btn ms-lg-2" onclick="logout()">Logout</button>
+    <span class="navbar-user">Hi, ${escapeHtml(user.name)}</span>
+    <button class="btn logout-btn ms-lg-2" type="button" onclick="logout()">Logout</button>
   `);
 }
 
 function showToast(message, type = 'info') {
   const toastId = `toast-${Date.now()}`;
+  const safeType = ['info', 'success', 'error'].includes(type) ? type : 'info';
 
   $('#toastContainer').append(`
-    <div id="${toastId}" class="app-toast ${type}">
-      ${message}
+    <div id="${toastId}" class="app-toast ${safeType}">
+      ${escapeHtml(message)}
     </div>
   `);
 
@@ -155,7 +172,7 @@ function showToast(message, type = 'info') {
 }
 
 function formatPrice(amount) {
-  return `PKR ${Number(amount).toLocaleString('en-PK')}`;
+  return `PKR ${Number(amount || 0).toLocaleString('en-PK')}`;
 }
 
 function formatDate(dateString) {
@@ -174,35 +191,44 @@ function buildStarRating(rating) {
     stars += i <= roundedRating ? '★' : '☆';
   }
 
-  return `<span class="stars">${stars}</span>`;
+  return `<span class="stars" aria-label="Rating ${roundedRating} out of 5">${stars}</span>`;
 }
 
 function buildProductCard(product) {
   const imageColor = product.images && product.images.length > 0 ? product.images[0] : '#00f5ff';
-  const originalPrice = product.originalPrice > product.price
-    ? `<span class="original-price">${formatPrice(product.originalPrice)}</span>`
+  const safeId = escapeHtml(product._id);
+  const safeName = escapeHtml(product.name);
+  const safeCategory = escapeHtml(product.category);
+  const safeImageColor = escapeHtml(imageColor);
+  const price = Number(product.price || 0);
+  const originalPrice = Number(product.originalPrice || 0);
+  const ratingAverage = product.rating ? product.rating.average : 0;
+  const ratingCount = product.rating ? product.rating.count : 0;
+
+  const originalPriceHtml = originalPrice > price
+    ? `<span class="original-price">${formatPrice(originalPrice)}</span>`
     : '';
 
   return `
     <div class="col-lg-3 col-md-4 col-sm-6">
       <div class="product-card">
-        <a href="product-detail.html?id=${product._id}" class="product-image" style="background:${imageColor};"></a>
+        <a href="product-detail.html?id=${safeId}" class="product-image" style="background:${safeImageColor};" aria-label="View ${safeName}"></a>
         <div class="product-body">
-          <p class="product-category">${product.category}</p>
-          <h3>${product.name}</h3>
+          <p class="product-category">${safeCategory}</p>
+          <h3>${safeName}</h3>
           <div class="rating-row">
-            ${buildStarRating(product.rating.average)}
-            <span>${product.rating.count}</span>
+            ${buildStarRating(ratingAverage)}
+            <span>${Number(ratingCount || 0)}</span>
           </div>
           <div class="price-row">
-            <strong>${formatPrice(product.price)}</strong>
-            ${originalPrice}
+            <strong>${formatPrice(price)}</strong>
+            ${originalPriceHtml}
           </div>
           <div class="d-flex gap-2">
-            <button class="btn primary-btn w-100" onclick="addProductToCart('${product._id}', '${product.name}', ${product.price}, '${imageColor}')">
+            <button class="btn primary-btn w-100 add-to-cart-btn" type="button" data-product-id="${safeId}">
               Add
             </button>
-            <a class="btn icon-btn" href="product-detail.html?id=${product._id}">View</a>
+            <a class="btn icon-btn" href="product-detail.html?id=${safeId}">View</a>
           </div>
         </div>
       </div>
@@ -253,3 +279,18 @@ async function addProductToCart(productId, name, price, image, quantity = 1) {
 async function addGuestProductToCart(productId, name, price, image) {
   await addProductToCart(productId, name, price, image, 1);
 }
+
+$(document).on('click', '.add-to-cart-btn', async function () {
+  const productId = $(this).data('product-id');
+  const response = await apiCall(`/products/${productId}`);
+
+  if (!response.success || !response.product) {
+    showToast('Could not load product details.', 'error');
+    return;
+  }
+
+  const product = response.product;
+  const image = product.images && product.images.length > 0 ? product.images[0] : '#00f5ff';
+
+  await addProductToCart(product._id, product.name, Number(product.price), image, 1);
+});
