@@ -27,7 +27,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, sans-serif;
+  font-family: 'Sora', sans-serif;
 }
 
 a {
