@@ -1,5 +1,7 @@
 const API_BASE = 'https://nexsoft-ecommerce.onrender.com/api';
 
+let sessionExpiredHandled = false;
+
 async function apiCall(endpoint, method = 'GET', body = null) {
   const headers = {
     'Content-Type': 'application/json'
@@ -19,13 +21,36 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, options);
-    return await response.json();
+    const data = await response.json();
+
+    if (response.status === 401 && token) {
+      data.message = 'Your session has expired — please log in again.';
+      handleSessionExpired();
+    }
+
+    return data;
   } catch {
     return {
       success: false,
       message: 'Unable to connect to server.'
     };
   }
+}
+
+function handleSessionExpired() {
+  if (sessionExpiredHandled) {
+    return;
+  }
+
+  sessionExpiredHandled = true;
+
+  localStorage.removeItem('nexmartToken');
+  localStorage.removeItem('nexmartUser');
+  showToast('Your session has expired — please log in again.', 'error');
+
+  setTimeout(function () {
+    window.location.href = 'auth.html';
+  }, 800);
 }
 
 function escapeHtml(value) {
