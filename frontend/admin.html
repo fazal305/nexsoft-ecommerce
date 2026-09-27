@@ -263,8 +263,8 @@
 
         return `
           <tr>
-            <td>${product.name}</td>
-            <td>${product.category}</td>
+            <td>${escapeHtml(product.name)}</td>
+            <td>${escapeHtml(product.category)}</td>
             <td>${formatPrice(product.price)}</td>
             <td>${product.stock}</td>
             <td>${product.isFeatured ? 'Yes' : 'No'}</td>
@@ -381,8 +381,8 @@
 
         return `
           <tr>
-            <td>${order.orderNumber}</td>
-            <td>${customerName}</td>
+            <td>${escapeHtml(order.orderNumber)}</td>
+            <td>${escapeHtml(customerName)}</td>
             <td>${formatPrice(order.totalAmount)}</td>
             <td>${order.paymentStatus}</td>
             <td>
@@ -423,8 +423,8 @@
       const rows = response.users.map(function (user) {
         return `
           <tr>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
+            <td>${escapeHtml(user.name)}</td>
+            <td>${escapeHtml(user.email)}</td>
             <td>${formatDate(user.createdAt)}</td>
           </tr>
         `;

@@ -127,8 +127,8 @@
           <div class="detail-image" style="background:${imageColor};"></div>
 
           <div class="detail-content">
-            <p class="product-category">${product.category}</p>
-            <h1>${product.name}</h1>
+            <p class="product-category">${escapeHtml(product.category)}</p>
+            <h1>${escapeHtml(product.name)}</h1>
 
             <div class="rating-row mb-3">
               ${buildStarRating(product.rating.average)}
@@ -143,7 +143,7 @@
 
             <span class="stock-badge ${stockClass}">${stockText}</span>
 
-            <p class="detail-description">${product.description}</p>
+            <p class="detail-description">${escapeHtml(product.description)}</p>
 
             <div class="quantity-box">
               <button class="quantity-btn" onclick="decreaseQuantity()">-</button>

@@ -140,7 +140,7 @@
       const itemsHtml = checkoutCartItems.map(function (item) {
         return `
           <div class="checkout-item">
-            <span>${item.name} × ${item.quantity}</span>
+            <span>${escapeHtml(item.name)} × ${Number(item.quantity)}</span>
             <strong>${formatPrice(item.price * item.quantity)}</strong>
           </div>
         `;

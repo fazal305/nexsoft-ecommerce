@@ -146,7 +146,7 @@
             <div class="cart-item-image" style="background:${item.image};"></div>
 
             <div class="cart-item-info">
-              <h3>${item.name}</h3>
+              <h3>${escapeHtml(item.name)}</h3>
               <p>${formatPrice(item.price)}</p>
             </div>
 
