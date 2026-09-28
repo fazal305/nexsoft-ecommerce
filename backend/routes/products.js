@@ -1,9 +1,9 @@
-const express = require('express');
-const Product = require('../models/Product');
+const express = require("express");
+const Product = require("../models/Product");
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const { search, category, sort, page = 1, limit = 8 } = req.query;
 
@@ -11,8 +11,8 @@ router.get('/', async (req, res) => {
 
     if (search) {
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -22,11 +22,11 @@ router.get('/', async (req, res) => {
 
     let sortOption = { createdAt: -1 };
 
-    if (sort === 'price_asc') {
+    if (sort === "price_asc") {
       sortOption = { price: 1 };
     }
 
-    if (sort === 'price_desc') {
+    if (sort === "price_desc") {
       sortOption = { price: -1 };
     }
 
@@ -44,18 +44,18 @@ router.get('/', async (req, res) => {
       products,
       totalProducts,
       currentPage: Number(page),
-      totalPages: Math.ceil(totalProducts / Number(limit))
+      totalPages: Math.ceil(totalProducts / Number(limit)),
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch products.',
-      error: error.message
+      message: "Failed to fetch products.",
+      error: error.message,
     });
   }
 });
 
-router.get('/featured', async (req, res) => {
+router.get("/featured", async (req, res) => {
   try {
     const products = await Product.find({ isFeatured: true })
       .sort({ createdAt: -1 })
@@ -63,54 +63,54 @@ router.get('/featured', async (req, res) => {
 
     res.json({
       success: true,
-      products
+      products,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch featured products.',
-      error: error.message
+      message: "Failed to fetch featured products.",
+      error: error.message,
     });
   }
 });
 
-router.get('/categories', async (req, res) => {
+router.get("/categories", async (req, res) => {
   try {
-    const categories = await Product.distinct('category');
+    const categories = await Product.distinct("category");
 
     res.json({
       success: true,
-      categories
+      categories,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch categories.',
-      error: error.message
+      message: "Failed to fetch categories.",
+      error: error.message,
     });
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found.'
+        message: "Product not found.",
       });
     }
 
     res.json({
       success: true,
-      product
+      product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch product.',
-      error: error.message
+      message: "Failed to fetch product.",
+      error: error.message,
     });
   }
 });

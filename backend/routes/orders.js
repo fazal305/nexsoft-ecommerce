@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 
-const Cart = require('../models/Cart');
-const Order = require('../models/Order');
-const authMiddleware = require('../middleware/authMiddleware');
+const Cart = require("../models/Cart");
+const Order = require("../models/Order");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -13,16 +13,16 @@ function generateOrderNumber() {
   return `NX-${datePart}-${randomPart}`;
 }
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { shippingAddress, paymentStatus = 'paid' } = req.body;
+    const { shippingAddress, paymentStatus = "paid" } = req.body;
 
     const cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Cart is empty. Add products before placing an order.'
+        message: "Cart is empty. Add products before placing an order.",
       });
     }
 
@@ -35,10 +35,10 @@ router.post('/', authMiddleware, async (req, res) => {
       items: cart.items,
       totalAmount,
       shippingAddress,
-      paymentMethod: 'simulated',
+      paymentMethod: "simulated",
       paymentStatus,
-      orderStatus: 'processing',
-      orderNumber: generateOrderNumber()
+      orderStatus: "processing",
+      orderNumber: generateOrderNumber(),
     });
 
     cart.items = [];
@@ -46,60 +46,60 @@ router.post('/', authMiddleware, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Order created successfully.',
-      order
+      message: "Order created successfully.",
+      order,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to create order.',
-      error: error.message
+      message: "Failed to create order.",
+      error: error.message,
     });
   }
 });
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.user._id }).sort({
-      createdAt: -1
+      createdAt: -1,
     });
 
     res.json({
       success: true,
-      orders
+      orders,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch orders.',
-      error: error.message
+      message: "Failed to fetch orders.",
+      error: error.message,
     });
   }
 });
 
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const order = await Order.findOne({
       _id: req.params.id,
-      userId: req.user._id
+      userId: req.user._id,
     });
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found.'
+        message: "Order not found.",
       });
     }
 
     res.json({
       success: true,
-      order
+      order,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch order.',
-      error: error.message
+      message: "Failed to fetch order.",
+      error: error.message,
     });
   }
 });

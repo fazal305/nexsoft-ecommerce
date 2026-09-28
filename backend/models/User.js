@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
 
     email: {
@@ -13,40 +13,40 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
     },
 
     password: {
       type: String,
-      required: true
+      required: true,
     },
 
     role: {
       type: String,
-      enum: ['customer', 'admin'],
-      default: 'customer'
+      enum: ["customer", "admin"],
+      default: "customer",
     },
 
     address: {
       street: {
         type: String,
-        default: ''
+        default: "",
       },
 
       city: {
         type: String,
-        default: ''
+        default: "",
       },
 
       country: {
         type: String,
-        default: ''
-      }
-    }
+        default: "",
+      },
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

@@ -1,37 +1,37 @@
-const express = require('express');
+const express = require("express");
 
-const User = require('../models/User');
-const Product = require('../models/Product');
-const Order = require('../models/Order');
+const User = require("../models/User");
+const Product = require("../models/Product");
+const Order = require("../models/Order");
 
-const authMiddleware = require('../middleware/authMiddleware');
-const adminMiddleware = require('../middleware/adminMiddleware');
+const authMiddleware = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminMiddleware);
 
-router.get('/products', async (req, res) => {
+router.get("/products", async (req, res) => {
   try {
     const products = await Product.find()
-      .populate('createdBy', 'name email')
+      .populate("createdBy", "name email")
       .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      products
+      products,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch admin products.',
-      error: error.message
+      message: "Failed to fetch admin products.",
+      error: error.message,
     });
   }
 });
 
-router.post('/products', async (req, res) => {
+router.post("/products", async (req, res) => {
   try {
     const {
       name,
@@ -41,13 +41,13 @@ router.post('/products', async (req, res) => {
       category,
       stock,
       images,
-      isFeatured
+      isFeatured,
     } = req.body;
 
     if (!name || !description || !price || !category) {
       return res.status(400).json({
         success: false,
-        message: 'Name, description, price, and category are required.'
+        message: "Name, description, price, and category are required.",
       });
     }
 
@@ -60,104 +60,104 @@ router.post('/products', async (req, res) => {
       stock: stock || 0,
       images: images || [],
       isFeatured: isFeatured || false,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     res.status(201).json({
       success: true,
-      message: 'Product created successfully.',
-      product
+      message: "Product created successfully.",
+      product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to create product.',
-      error: error.message
+      message: "Failed to create product.",
+      error: error.message,
     });
   }
 });
 
-router.put('/products/:id', async (req, res) => {
+router.put("/products/:id", async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
 
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found.'
+        message: "Product not found.",
       });
     }
 
     res.json({
       success: true,
-      message: 'Product updated successfully.',
-      product
+      message: "Product updated successfully.",
+      product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to update product.',
-      error: error.message
+      message: "Failed to update product.",
+      error: error.message,
     });
   }
 });
 
-router.delete('/products/:id', async (req, res) => {
+router.delete("/products/:id", async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
 
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found.'
+        message: "Product not found.",
       });
     }
 
     res.json({
       success: true,
-      message: 'Product deleted successfully.'
+      message: "Product deleted successfully.",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to delete product.',
-      error: error.message
+      message: "Failed to delete product.",
+      error: error.message,
     });
   }
 });
 
-router.get('/orders', async (req, res) => {
+router.get("/orders", async (req, res) => {
   try {
     const orders = await Order.find()
-      .populate('userId', 'name email')
+      .populate("userId", "name email")
       .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      orders
+      orders,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch admin orders.',
-      error: error.message
+      message: "Failed to fetch admin orders.",
+      error: error.message,
     });
   }
 });
 
-router.put('/orders/:id/status', async (req, res) => {
+router.put("/orders/:id/status", async (req, res) => {
   try {
     const { orderStatus } = req.body;
 
-    const allowedStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
+    const allowedStatuses = ["processing", "shipped", "delivered", "cancelled"];
 
     if (!allowedStatuses.includes(orderStatus)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid order status.'
+        message: "Invalid order status.",
       });
     }
 
@@ -166,83 +166,83 @@ router.put('/orders/:id/status', async (req, res) => {
       { orderStatus },
       {
         new: true,
-        runValidators: true
-      }
+        runValidators: true,
+      },
     );
 
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found.'
+        message: "Order not found.",
       });
     }
 
     res.json({
       success: true,
-      message: 'Order status updated successfully.',
-      order
+      message: "Order status updated successfully.",
+      order,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to update order status.',
-      error: error.message
+      message: "Failed to update order status.",
+      error: error.message,
     });
   }
 });
 
-router.get('/users', async (req, res) => {
+router.get("/users", async (req, res) => {
   try {
-    const users = await User.find({ role: 'customer' })
-      .select('-password')
+    const users = await User.find({ role: "customer" })
+      .select("-password")
       .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      users
+      users,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch customers.',
-      error: error.message
+      message: "Failed to fetch customers.",
+      error: error.message,
     });
   }
 });
 
-router.get('/stats', async (req, res) => {
+router.get("/stats", async (req, res) => {
   try {
     const totalProducts = await Product.countDocuments();
     const totalOrders = await Order.countDocuments();
-    const totalUsers = await User.countDocuments({ role: 'customer' });
+    const totalUsers = await User.countDocuments({ role: "customer" });
 
     const revenueResult = await Order.aggregate([
       {
         $match: {
-          paymentStatus: 'paid'
-        }
+          paymentStatus: "paid",
+        },
       },
       {
         $group: {
           _id: null,
           totalRevenue: {
-            $sum: '$totalAmount'
-          }
-        }
-      }
+            $sum: "$totalAmount",
+          },
+        },
+      },
     ]);
 
     const totalRevenue = revenueResult[0]?.totalRevenue || 0;
 
     const recentOrders = await Order.find()
-      .populate('userId', 'name email')
+      .populate("userId", "name email")
       .sort({ createdAt: -1 })
       .limit(5);
 
     const lowStockProducts = await Product.find({
       stock: {
-        $lt: 5
-      }
+        $lt: 5,
+      },
     }).sort({ stock: 1 });
 
     res.json({
@@ -253,14 +253,14 @@ router.get('/stats', async (req, res) => {
         totalUsers,
         totalRevenue,
         recentOrders,
-        lowStockProducts
-      }
+        lowStockProducts,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch admin stats.',
-      error: error.message
+      message: "Failed to fetch admin stats.",
+      error: error.message,
     });
   }
 });

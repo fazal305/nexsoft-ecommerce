@@ -1,10 +1,10 @@
-const API_BASE = 'https://nexsoft-ecommerce.onrender.com/api';
+const API_BASE = "https://nexsoft-ecommerce.onrender.com/api";
 
 let sessionExpiredHandled = false;
 
-async function apiCall(endpoint, method = 'GET', body = null) {
+async function apiCall(endpoint, method = "GET", body = null) {
   const headers = {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   };
 
   const token = getToken();
@@ -24,7 +24,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     const data = await response.json();
 
     if (response.status === 401 && token) {
-      data.message = 'Your session has expired — please log in again.';
+      data.message = "Your session has expired — please log in again.";
       handleSessionExpired();
     }
 
@@ -32,7 +32,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
   } catch {
     return {
       success: false,
-      message: 'Unable to connect to server.'
+      message: "Unable to connect to server.",
     };
   }
 }
@@ -44,34 +44,34 @@ function handleSessionExpired() {
 
   sessionExpiredHandled = true;
 
-  localStorage.removeItem('nexmartToken');
-  localStorage.removeItem('nexmartUser');
-  showToast('Your session has expired — please log in again.', 'error');
+  localStorage.removeItem("nexmartToken");
+  localStorage.removeItem("nexmartUser");
+  showToast("Your session has expired — please log in again.", "error");
 
   setTimeout(function () {
-    window.location.href = 'auth.html';
+    window.location.href = "auth.html";
   }, 800);
 }
 
 function escapeHtml(value) {
-  return String(value || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function getToken() {
-  return localStorage.getItem('nexmartToken');
+  return localStorage.getItem("nexmartToken");
 }
 
 function getUser() {
   try {
-    const user = localStorage.getItem('nexmartUser');
+    const user = localStorage.getItem("nexmartUser");
     return user ? JSON.parse(user) : null;
   } catch {
-    localStorage.removeItem('nexmartUser');
+    localStorage.removeItem("nexmartUser");
     return null;
   }
 }
@@ -82,31 +82,31 @@ function isLoggedIn() {
 
 function isAdmin() {
   const user = getUser();
-  return Boolean(user && user.role === 'admin');
+  return Boolean(user && user.role === "admin");
 }
 
 function logout() {
-  localStorage.removeItem('nexmartToken');
-  localStorage.removeItem('nexmartUser');
-  showToast('Logged out successfully.', 'success');
+  localStorage.removeItem("nexmartToken");
+  localStorage.removeItem("nexmartUser");
+  showToast("Logged out successfully.", "success");
 
   setTimeout(function () {
-    window.location.href = 'index.html';
+    window.location.href = "index.html";
   }, 700);
 }
 
 function getGuestCart() {
   try {
-    const cart = localStorage.getItem('nexmartGuestCart');
+    const cart = localStorage.getItem("nexmartGuestCart");
     return cart ? JSON.parse(cart) : [];
   } catch {
-    localStorage.removeItem('nexmartGuestCart');
+    localStorage.removeItem("nexmartGuestCart");
     return [];
   }
 }
 
 function saveGuestCart(cart) {
-  localStorage.setItem('nexmartGuestCart', JSON.stringify(cart));
+  localStorage.setItem("nexmartGuestCart", JSON.stringify(cart));
 }
 
 async function mergeGuestCartToBackend() {
@@ -117,13 +117,13 @@ async function mergeGuestCartToBackend() {
   }
 
   for (const item of guestCart) {
-    await apiCall('/cart/add', 'POST', {
+    await apiCall("/cart/add", "POST", {
       productId: item.productId,
-      quantity: item.quantity
+      quantity: item.quantity,
     });
   }
 
-  localStorage.removeItem('nexmartGuestCart');
+  localStorage.removeItem("nexmartGuestCart");
 }
 
 async function getCartCount() {
@@ -135,7 +135,7 @@ async function getCartCount() {
     }, 0);
   }
 
-  const response = await apiCall('/cart');
+  const response = await apiCall("/cart");
 
   if (!response.success || !response.cart) {
     return 0;
@@ -148,47 +148,49 @@ async function getCartCount() {
 
 async function updateCartBadge() {
   const count = await getCartCount();
-  $('#cartCountBadge').text(count);
+  $("#cartCountBadge").text(count);
 }
 
 function updateNavbar() {
   const user = getUser();
 
   if (!user) {
-    $('#authNavArea').html('<a class="btn small-btn" href="auth.html">Login</a>');
+    $("#authNavArea").html(
+      '<a class="btn small-btn" href="auth.html">Login</a>',
+    );
     return;
   }
 
-  if (user.role === 'admin') {
-    $('#authNavArea').html(`
+  if (user.role === "admin") {
+    $("#authNavArea").html(`
       <a class="btn small-btn admin-link" href="admin.html">Admin</a>
       <button class="btn logout-btn ms-lg-2" type="button" onclick="logout()">Logout</button>
     `);
     return;
   }
 
-  $('#authNavArea').html(`
+  $("#authNavArea").html(`
     <span class="navbar-user">Hi, ${escapeHtml(user.name)}</span>
     <button class="btn logout-btn ms-lg-2" type="button" onclick="logout()">Logout</button>
   `);
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = "info") {
   const toastId = `toast-${Date.now()}`;
-  const safeType = ['info', 'success', 'error'].includes(type) ? type : 'info';
+  const safeType = ["info", "success", "error"].includes(type) ? type : "info";
 
-  $('#toastContainer').append(`
+  $("#toastContainer").append(`
     <div id="${toastId}" class="app-toast ${safeType}">
       ${escapeHtml(message)}
     </div>
   `);
 
   setTimeout(function () {
-    $(`#${toastId}`).addClass('show');
+    $(`#${toastId}`).addClass("show");
   }, 50);
 
   setTimeout(function () {
-    $(`#${toastId}`).removeClass('show');
+    $(`#${toastId}`).removeClass("show");
 
     setTimeout(function () {
       $(`#${toastId}`).remove();
@@ -197,30 +199,31 @@ function showToast(message, type = 'info') {
 }
 
 function formatPrice(amount) {
-  return `PKR ${Number(amount || 0).toLocaleString('en-PK')}`;
+  return `PKR ${Number(amount || 0).toLocaleString("en-PK")}`;
 }
 
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('en-PK', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  return new Date(dateString).toLocaleDateString("en-PK", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 }
 
 function buildStarRating(rating) {
   const roundedRating = Math.round(rating || 0);
-  let stars = '';
+  let stars = "";
 
   for (let i = 1; i <= 5; i++) {
-    stars += i <= roundedRating ? '★' : '☆';
+    stars += i <= roundedRating ? "★" : "☆";
   }
 
   return `<span class="stars" aria-label="Rating ${roundedRating} out of 5">${stars}</span>`;
 }
 
 function buildProductCard(product) {
-  const imageColor = product.images && product.images.length > 0 ? product.images[0] : '#00f5ff';
+  const imageColor =
+    product.images && product.images.length > 0 ? product.images[0] : "#00f5ff";
   const safeId = escapeHtml(product._id);
   const safeName = escapeHtml(product.name);
   const safeCategory = escapeHtml(product.category);
@@ -230,9 +233,10 @@ function buildProductCard(product) {
   const ratingAverage = product.rating ? product.rating.average : 0;
   const ratingCount = product.rating ? product.rating.count : 0;
 
-  const originalPriceHtml = originalPrice > price
-    ? `<span class="original-price">${formatPrice(originalPrice)}</span>`
-    : '';
+  const originalPriceHtml =
+    originalPrice > price
+      ? `<span class="original-price">${formatPrice(originalPrice)}</span>`
+      : "";
 
   return `
     <div class="col-lg-3 col-md-4 col-sm-6">
@@ -263,18 +267,18 @@ function buildProductCard(product) {
 
 async function addProductToCart(productId, name, price, image, quantity = 1) {
   if (isLoggedIn()) {
-    const response = await apiCall('/cart/add', 'POST', {
+    const response = await apiCall("/cart/add", "POST", {
       productId,
-      quantity
+      quantity,
     });
 
     if (!response.success) {
-      showToast(response.message || 'Failed to add product.', 'error');
+      showToast(response.message || "Failed to add product.", "error");
       return;
     }
 
     await updateCartBadge();
-    showToast('Product added to cart.', 'success');
+    showToast("Product added to cart.", "success");
     return;
   }
 
@@ -292,30 +296,37 @@ async function addProductToCart(productId, name, price, image, quantity = 1) {
       name,
       price,
       image,
-      quantity
+      quantity,
     });
   }
 
   saveGuestCart(cart);
   await updateCartBadge();
-  showToast('Product added to cart.', 'success');
+  showToast("Product added to cart.", "success");
 }
 
 async function addGuestProductToCart(productId, name, price, image) {
   await addProductToCart(productId, name, price, image, 1);
 }
 
-$(document).on('click', '.add-to-cart-btn', async function () {
-  const productId = $(this).data('product-id');
+$(document).on("click", ".add-to-cart-btn", async function () {
+  const productId = $(this).data("product-id");
   const response = await apiCall(`/products/${productId}`);
 
   if (!response.success || !response.product) {
-    showToast('Could not load product details.', 'error');
+    showToast("Could not load product details.", "error");
     return;
   }
 
   const product = response.product;
-  const image = product.images && product.images.length > 0 ? product.images[0] : '#00f5ff';
+  const image =
+    product.images && product.images.length > 0 ? product.images[0] : "#00f5ff";
 
-  await addProductToCart(product._id, product.name, Number(product.price), image, 1);
+  await addProductToCart(
+    product._id,
+    product.name,
+    Number(product.price),
+    image,
+    1,
+  );
 });

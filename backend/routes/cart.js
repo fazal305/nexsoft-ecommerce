@@ -1,36 +1,36 @@
-const express = require('express');
+const express = require("express");
 
-const Cart = require('../models/Cart');
-const Product = require('../models/Product');
-const authMiddleware = require('../middleware/authMiddleware');
+const Cart = require("../models/Cart");
+const Product = require("../models/Product");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     let cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart) {
       cart = await Cart.create({
         userId: req.user._id,
-        items: []
+        items: [],
       });
     }
 
     res.json({
       success: true,
-      cart
+      cart,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch cart.',
-      error: error.message
+      message: "Failed to fetch cart.",
+      error: error.message,
     });
   }
 });
 
-router.post('/add', authMiddleware, async (req, res) => {
+router.post("/add", authMiddleware, async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
 
@@ -39,14 +39,14 @@ router.post('/add', authMiddleware, async (req, res) => {
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: 'Product not found.'
+        message: "Product not found.",
       });
     }
 
     if (product.stock <= 0) {
       return res.status(400).json({
         success: false,
-        message: 'Product is out of stock.'
+        message: "Product is out of stock.",
       });
     }
 
@@ -55,7 +55,7 @@ router.post('/add', authMiddleware, async (req, res) => {
     if (!cart) {
       cart = await Cart.create({
         userId: req.user._id,
-        items: []
+        items: [],
       });
     }
 
@@ -71,7 +71,7 @@ router.post('/add', authMiddleware, async (req, res) => {
         name: product.name,
         price: product.price,
         quantity: Number(quantity),
-        image: product.images[0] || ''
+        image: product.images[0] || "",
       });
     }
 
@@ -79,26 +79,26 @@ router.post('/add', authMiddleware, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Product added to cart.',
-      cart
+      message: "Product added to cart.",
+      cart,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to add product to cart.',
-      error: error.message
+      message: "Failed to add product to cart.",
+      error: error.message,
     });
   }
 });
 
-router.put('/update', authMiddleware, async (req, res) => {
+router.put("/update", authMiddleware, async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
     if (Number(quantity) < 1) {
       return res.status(400).json({
         success: false,
-        message: 'Quantity must be at least 1.'
+        message: "Quantity must be at least 1.",
       });
     }
 
@@ -107,7 +107,7 @@ router.put('/update', authMiddleware, async (req, res) => {
     if (!cart) {
       return res.status(404).json({
         success: false,
-        message: 'Cart not found.'
+        message: "Cart not found.",
       });
     }
 
@@ -118,7 +118,7 @@ router.put('/update', authMiddleware, async (req, res) => {
     if (!item) {
       return res.status(404).json({
         success: false,
-        message: 'Item not found in cart.'
+        message: "Item not found in cart.",
       });
     }
 
@@ -128,26 +128,26 @@ router.put('/update', authMiddleware, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Cart updated.',
-      cart
+      message: "Cart updated.",
+      cart,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to update cart.',
-      error: error.message
+      message: "Failed to update cart.",
+      error: error.message,
     });
   }
 });
 
-router.delete('/remove/:productId', authMiddleware, async (req, res) => {
+router.delete("/remove/:productId", authMiddleware, async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart) {
       return res.status(404).json({
         success: false,
-        message: 'Cart not found.'
+        message: "Cart not found.",
       });
     }
 
@@ -159,29 +159,29 @@ router.delete('/remove/:productId', authMiddleware, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Item removed from cart.',
-      cart
+      message: "Item removed from cart.",
+      cart,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to remove item.',
-      error: error.message
+      message: "Failed to remove item.",
+      error: error.message,
     });
   }
 });
 
-router.delete('/clear', authMiddleware, async (req, res) => {
+router.delete("/clear", authMiddleware, async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart) {
       return res.json({
         success: true,
-        message: 'Cart is already empty.',
+        message: "Cart is already empty.",
         cart: {
-          items: []
-        }
+          items: [],
+        },
       });
     }
 
@@ -191,14 +191,14 @@ router.delete('/clear', authMiddleware, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Cart cleared.',
-      cart
+      message: "Cart cleared.",
+      cart,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Failed to clear cart.',
-      error: error.message
+      message: "Failed to clear cart.",
+      error: error.message,
     });
   }
 });

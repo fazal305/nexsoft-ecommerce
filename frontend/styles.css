@@ -27,7 +27,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Sora', sans-serif;
+  font-family: "Sora", sans-serif;
 }
 
 a {
@@ -168,7 +168,7 @@ a {
 
 .product-card:hover {
   border-color: var(--cyan);
-  box-shadow: 0 0 30px rgba(0,245,255,0.12);
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.12);
   transform: translateY(-4px);
 }
 
@@ -239,7 +239,7 @@ a {
 /* FILTERS */
 
 .filter-sidebar {
-  background: rgba(17,17,32,.88);
+  background: rgba(17, 17, 32, 0.88);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
@@ -254,14 +254,14 @@ a {
 
 .loading-box,
 .error-box {
-  background: rgba(17,17,32,.88);
+  background: rgba(17, 17, 32, 0.88);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem;
 }
 
 .error-box {
-  border-color: rgba(255,56,96,.4);
+  border-color: rgba(255, 56, 96, 0.4);
   color: var(--red);
 }
 
@@ -279,7 +279,7 @@ a {
 }
 
 .detail-content {
-  background: rgba(17,17,32,.88);
+  background: rgba(17, 17, 32, 0.88);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 2rem;
@@ -304,17 +304,17 @@ a {
 }
 
 .stock-badge.in {
-  background: rgba(0,255,136,.1);
+  background: rgba(0, 255, 136, 0.1);
   color: var(--green);
 }
 
 .stock-badge.low {
-  background: rgba(245,166,35,.1);
+  background: rgba(245, 166, 35, 0.1);
   color: var(--amber);
 }
 
 .stock-badge.out {
-  background: rgba(255,56,96,.1);
+  background: rgba(255, 56, 96, 0.1);
   color: var(--red);
 }
 
@@ -343,7 +343,7 @@ a {
 .auth-card,
 .admin-panel,
 .stat-card {
-  background: rgba(17,17,32,.88);
+  background: rgba(17, 17, 32, 0.88);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -366,7 +366,7 @@ a {
 .cart-quantity {
   align-items: center;
   display: flex;
-  gap: .75rem;
+  gap: 0.75rem;
 }
 
 .cart-quantity button {
@@ -402,8 +402,8 @@ a {
 /* CHECKOUT */
 
 .payment-warning {
-  background: rgba(245,166,35,.1);
-  border: 1px solid rgba(245,166,35,.3);
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.3);
   border-radius: var(--radius);
   color: var(--amber);
   margin-bottom: 1rem;
@@ -418,12 +418,12 @@ a {
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  padding: .75rem 0;
+  padding: 0.75rem 0;
 }
 
 .success-box {
-  background: rgba(0,255,136,.08);
-  border: 1px solid rgba(0,255,136,.25);
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.25);
   border-radius: var(--radius);
   padding: 1rem;
 }
@@ -442,7 +442,7 @@ a {
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin-bottom: 1.5rem;
-  padding: .25rem;
+  padding: 0.25rem;
 }
 
 .auth-tab {
@@ -451,11 +451,11 @@ a {
   border-radius: 999px;
   color: var(--muted);
   font-weight: 800;
-  padding: .75rem;
+  padding: 0.75rem;
 }
 
 .auth-tab.active {
-  background: linear-gradient(135deg,var(--cyan),var(--purple));
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
   color: #000;
 }
 
@@ -484,7 +484,7 @@ a {
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  padding: .75rem 0;
+  padding: 0.75rem 0;
 }
 
 .order-item-row:last-child {
@@ -511,8 +511,8 @@ a {
   border-radius: var(--radius);
   color: var(--muted);
   display: block;
-  margin-bottom: .5rem;
-  padding: .8rem;
+  margin-bottom: 0.5rem;
+  padding: 0.8rem;
   text-align: left;
   width: 100%;
 }
@@ -529,7 +529,7 @@ a {
 .admin-stats-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(4,1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .stat-card {
@@ -549,20 +549,20 @@ a {
 }
 
 .table-edit-btn {
-  background: rgba(0,245,255,.1);
-  border: 1px solid rgba(0,245,255,.3);
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
   border-radius: 999px;
   color: var(--cyan);
-  margin-right: .5rem;
-  padding: .35rem .7rem;
+  margin-right: 0.5rem;
+  padding: 0.35rem 0.7rem;
 }
 
 .table-delete-btn {
-  background: rgba(255,56,96,.1);
-  border: 1px solid rgba(255,56,96,.3);
+  background: rgba(255, 56, 96, 0.1);
+  border: 1px solid rgba(255, 56, 96, 0.3);
   border-radius: 999px;
   color: var(--red);
-  padding: .35rem .7rem;
+  padding: 0.35rem 0.7rem;
 }
 
 .admin-modal {
@@ -586,7 +586,7 @@ a {
   opacity: 0;
   padding: 12px 16px;
   transform: translateX(120%);
-  transition: .3s ease;
+  transition: 0.3s ease;
 }
 
 .app-toast.show {

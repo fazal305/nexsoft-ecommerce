@@ -1,9 +1,9 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const User = require('../models/User');
-const authMiddleware = require('../middleware/authMiddleware');
+const User = require("../models/User");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -11,23 +11,23 @@ function createToken(user) {
   return jwt.sign(
     {
       userId: user._id,
-      role: user.role
+      role: user.role,
     },
     process.env.JWT_SECRET,
     {
-      expiresIn: '7d'
-    }
+      expiresIn: "7d",
+    },
   );
 }
 
-router.post('/register', async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Name, email, and password are required.'
+        message: "Name, email, and password are required.",
       });
     }
 
@@ -36,7 +36,7 @@ router.post('/register', async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'Email is already registered.'
+        message: "Email is already registered.",
       });
     }
 
@@ -46,39 +46,39 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: 'customer'
+      role: "customer",
     });
 
     const token = createToken(user);
 
     res.status(201).json({
       success: true,
-      message: 'Account created successfully.',
+      message: "Account created successfully.",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Registration failed.',
-      error: error.message
+      message: "Registration failed.",
+      error: error.message,
     });
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required.'
+        message: "Email and password are required.",
       });
     }
 
@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password.'
+        message: "Invalid email or password.",
       });
     }
 
@@ -96,7 +96,7 @@ router.post('/login', async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password.'
+        message: "Invalid email or password.",
       });
     }
 
@@ -104,25 +104,25 @@ router.post('/login', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Login successful.',
+      message: "Login successful.",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Login failed.',
-      error: error.message
+      message: "Login failed.",
+      error: error.message,
     });
   }
 });
 
-router.get('/me', authMiddleware, async (req, res) => {
+router.get("/me", authMiddleware, async (req, res) => {
   res.json({
     success: true,
     user: {
@@ -130,8 +130,8 @@ router.get('/me', authMiddleware, async (req, res) => {
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
-      address: req.user.address
-    }
+      address: req.user.address,
+    },
   });
 });
 
